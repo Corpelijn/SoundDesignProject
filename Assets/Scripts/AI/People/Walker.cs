@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.LevelGenerator;
+﻿using Assets.Scripts.Audio;
+using Assets.Scripts.LevelGenerator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,19 @@ namespace Assets.Scripts.AI.People
         private float interpolation;
         private Vector3 lastPosition;
 
+        private float timeSinceLast;
+
         #endregion
 
         #region "Constructors"
 
         public Walker()
+        {
+            destination = null;
+            interpolation = 0f;
+        }
+
+        public Walker(Person person) : base(person)
         {
             destination = null;
             interpolation = 0f;
@@ -92,17 +101,32 @@ namespace Assets.Scripts.AI.People
             speed = 1f / distanceTime;
 
             startPosition = position;
+            timeSinceLast = 0f;
 
-            Debug.DrawLine(destination.Value, destination.Value + Vector3.up, Color.red, 3, false);
+            //Debug.DrawLine(destination.Value, destination.Value + Vector3.up, Color.red, 3, false);
         }
 
         private void CollideWithOtherPerson()
         {
             // Play the sound for the collision with the other
+            string[] collisionTekst = new string[] { "sorry", "pardon", "hey", "oef", "pasop", "" }; // The "" causes the walker to say nothing, being impolite
+            AudioFragment tekst = AudioManager.GetFragment(collisionTekst[PRNG.GetNumber(0, collisionTekst.Length - 1)]);
+            sourceManager.PlaySound(tekst, voice);
+
 
             // Give the walker a new position to walk to
             position = lastPosition;
             destination = null;
+        }
+
+        private void CollideWithObject()
+        {
+            if (timeSinceLast >= 1f)
+            {
+                // Give the walker a new position to walk to
+                position = lastPosition;
+                destination = null;
+            }
         }
 
         #endregion
@@ -121,14 +145,20 @@ namespace Assets.Scripts.AI.People
 
             if (HasPosition)
                 Walk();
+
+            timeSinceLast += Time.deltaTime;
         }
 
         public override void Trigger(TriggerType trigger)
         {
             // If a walker has a collision, do a walking update
-            if(trigger == TriggerType.Collision)
+            if (trigger == TriggerType.PersonCollision)
             {
                 CollideWithOtherPerson();
+            }
+            else if (trigger == TriggerType.Collision)
+            {
+                CollideWithObject();
             }
         }
 

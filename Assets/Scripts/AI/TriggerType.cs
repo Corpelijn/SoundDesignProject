@@ -7,6 +7,12 @@ namespace Assets.Scripts.AI
 {
     enum TriggerType
     {
-        Collision
+        Collision,
+        PersonCollision,
+        Click,
+
+        PersonStartTalking,
+        PersonTalk,
+        PersonSaysBye
     }
 }

@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Audio;
+﻿using Assets.Scripts.AI.People;
+using Assets.Scripts.Audio;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,6 +72,11 @@ namespace Assets.Scripts.AI
         /// </summary>
         protected bool running;
 
+        /// <summary>
+        /// The pitch of the voice
+        /// </summary>
+        protected float voice;
+
         private bool hasPosition;
         private float timePassed;
 
@@ -83,6 +89,10 @@ namespace Assets.Scripts.AI
         /// The interval of the sound effect
         /// </summary>
         protected float walkingInterval;
+
+        //private AudioSource walkingSource;
+        //protected AudioSource talkingSource;
+        protected AudioSourceManager sourceManager;
 
         #endregion
 
@@ -103,20 +113,50 @@ namespace Assets.Scripts.AI
             angry = PRNG.GetFloatNumber(0, 1);
             sad = PRNG.GetFloatNumber(0, 1);
             speed = PRNG.GetFloatNumber(5, 10);
-            
+            voice = gender == Gender.Male ? PRNG.GetFloatNumber(0.90f, 1.00f) : PRNG.GetFloatNumber(1.05f, 1.15f);
+
             walking = false;
             paranoid = false;
             robbed = false;
             running = false;
 
             walkingInterval = PRNG.GetFloatNumber(0.5f, 0.9f);
-            stepPitch = PRNG.GetFloatNumber(0.5f, 1.5f);
+            stepPitch = PRNG.GetFloatNumber(1f, 1.2f, 3);
 
             hasPosition = false;
             timePassed = 0f;
 
             // Generate a random name
             GenerateRandomName();
+        }
+
+        protected Person(Person person)
+        {
+            // Copy the values
+            name = person.name;
+            gender = person.gender;
+            hearing = person.hearing;
+            scared = person.scared;
+            buying = person.buying;
+            angry = person.angry;
+            sad = person.sad;
+            speed = person.speed;
+            voice = person.voice;
+
+            walking = person.walking;
+            paranoid = person.paranoid;
+            robbed = person.robbed;
+            running = person.running;
+
+            walkingInterval = person.walkingInterval;
+            stepPitch = person.stepPitch;
+
+            hasPosition = person.hasPosition;
+            timePassed = person.timePassed;
+
+            gameObject = person.gameObject;
+            position = person.position;
+            sourceManager = new AudioSourceManager(gameObject);
         }
 
         #endregion
@@ -131,6 +171,11 @@ namespace Assets.Scripts.AI
         public Gender Gender
         {
             get { return gender; }
+        }
+
+        public GameObject GameObject
+        {
+            get { return gameObject; }
         }
 
         public bool HasPosition
@@ -188,6 +233,11 @@ namespace Assets.Scripts.AI
             get { return robbed; }
         }
 
+        public float Voice
+        {
+            get { return voice; }
+        }
+
         #endregion
 
         #region "Methods"
@@ -219,6 +269,18 @@ namespace Assets.Scripts.AI
             }
         }
 
+        private void GenerateAudio()
+        {
+            //AudioSource[] sources = gameObject.GetComponents<AudioSource>();
+            //walkingSource = sources[0];
+            //talkingSource = sources[1];
+
+            //talkingSource.pitch = voice;
+
+            //walkingSource.clip = AudioManager.GetClip(AudioManager.GetFragment("footstep"), stepPitch, 0f);
+            //talkingSource.clip = AudioManager.GetClip(AudioManager.GetFragment("sorry"), voice, 0f);
+        }
+
         #endregion
 
         #region "Abstract/Virtual Methods"
@@ -226,11 +288,13 @@ namespace Assets.Scripts.AI
         public virtual void Update()
         {
             timePassed += Time.deltaTime;
-            if(timePassed >= walkingInterval)
+            if (timePassed >= walkingInterval)
             {
-                AudioSource source = gameObject.GetComponent<AudioSource>();
-                //source.pitch = PRNG.GetFloatNumber(stepPitch - 0.1f, stepPitch + 0.1f);
-                source.Play();
+                //walkingSource.pitch = PRNG.GetFloatNumber(stepPitch - 0.1f, stepPitch + 0.1f);
+                //walkingSource.Play();
+
+                float pitch = PRNG.GetFloatNumber(stepPitch - 0.1f, stepPitch + 0.1f);
+                sourceManager.PlaySound(AudioManager.GetFragment("footstep"), pitch);
                 timePassed = 0f;
             }
         }
@@ -245,10 +309,12 @@ namespace Assets.Scripts.AI
             if (gameObject == null)
             {
                 gameObject = ObjectPool.Instantiate("person");
+                sourceManager = new AudioSourceManager(gameObject);
                 gameObject.transform.parent = PersonManager.INSTANCE.PeopleTransform;
                 gameObject.GetComponent<PersonIdentifier>().Person = this;
-                gameObject.GetComponent<AudioSource>().clip = AudioManager.GetClip(AudioManager.INSTANCE.Footstep, 0f, 0f);
                 gameObject.GetComponentInChildren<Renderer>().material.color = gender == Gender.Male ? Color.blue : Color.magenta;
+
+                //GenerateAudio();
             }
 
             gameObject.transform.position = position;

@@ -10,7 +10,7 @@ namespace Assets.Scripts.Audio
     {
         #region "Fields"
 
-        public AudioClip Footstep = null;
+        public AudioFragment[] fragments = null;
 
         #endregion
 
@@ -39,7 +39,7 @@ namespace Assets.Scripts.Audio
 
         #region "Methods"
 
-        
+
 
         #endregion
 
@@ -60,12 +60,25 @@ namespace Assets.Scripts.Audio
 
         #region "Static Methods"
 
-        public static AudioClip GetClip(AudioClip source, float pitch, float speed)
+        //public static AudioClip GetClip(AudioClip source, float pitch, float speed)
+        //{
+        //    // Create a new AudioClipBaker to create the new AudioClip
+        //    AudioClipBaker baker = new AudioClipBaker(source, pitch, speed);
+        //    AudioClip newClip = baker.Bake();
+        //    return newClip;
+        //}
+
+        public static AudioFragment GetFragment(string name)
         {
-            // Create a new AudioClipBaker to create the new AudioClip
-            AudioClipBaker baker = new AudioClipBaker(source, pitch, speed);
-            AudioClip newClip = baker.Bake();
-            return newClip;
+            Profiler.BeginSample("Fetch AudioFragment");
+            AudioFragment fragment = INSTANCE.fragments.FirstOrDefault(x => x.Name == name);
+            if (fragment == null && name != "")
+            {
+                Debug.Log("Cannot find the AudioFragment \'" + name + "\'");
+            }
+
+            Profiler.EndSample();
+            return fragment;
         }
 
         #endregion

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Assets.Scripts.Audio.Effects
 {
+    /// <summary>
+    /// http://stackoverflow.com/questions/9805407/normalizing-audio-how-to-convert-a-float-array-to-a-byte-array
+    /// </summary>
     class AudioNormalizer
     {
         #region "Fields"
@@ -61,7 +64,7 @@ namespace Assets.Scripts.Audio.Effects
             }
 
             // Get the offset
-            float offset = 1f - biggest;
+            float offset = 0.9f - biggest;
 
             // Normalize the audio
             for (int i = 0; i < samples.Length; i++)

@@ -10,9 +10,9 @@ namespace Assets.Scripts
     {
         #region "Fields"
 
-        public TextAsset FemaleNames;
-        public TextAsset MaleNames;
-        public TextAsset Surnames;
+        public TextAsset FemaleNames = null;
+        public TextAsset MaleNames = null;
+        public TextAsset Surnames = null;
 
         #endregion
 

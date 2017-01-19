@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.AI.People;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace Assets.Scripts.AI
         #region "Fields"
 
         public string Name = "";
+        public string Type;
         public Gender Gender;
         public float Hearing;
         public float Scared;
@@ -18,12 +20,15 @@ namespace Assets.Scripts.AI
         public float Angry;
         public float Sad;
         public float Speed;
+        public float Voice;
         public bool Walking;
         public bool Paranoid;
         public bool Robbed;
         public bool Running;
 
         private Person person;
+
+        private float demoTime;
 
         #endregion
 
@@ -37,6 +42,7 @@ namespace Assets.Scripts.AI
 
         public Person Person
         {
+            get { return person; }
             set { person = value; SetEditorValues(); }
         }
 
@@ -44,10 +50,11 @@ namespace Assets.Scripts.AI
 
         #region "Methods"
 
-        private void SetEditorValues()
+        public void SetEditorValues()
         {
             name = person.FullName + " (" + person.Gender + ")";
 
+            Type = person.GetType().Name;
             Name = person.FullName;
             Gender = person.Gender;
             Hearing = person.Hearing;
@@ -60,6 +67,7 @@ namespace Assets.Scripts.AI
             Paranoid = person.Paranoid;
             Robbed = person.Robbed;
             Running = person.Running;
+            Voice = person.Voice;
         }
 
         #endregion
@@ -74,7 +82,43 @@ namespace Assets.Scripts.AI
 
         public void OnTriggerEnter(Collider collider)
         {
-            person.Trigger(TriggerType.Collision);
+            PersonIdentifier identifier = collider.GetComponentInChildren<PersonIdentifier>();
+            if (identifier != null)
+            {
+                person.Trigger(TriggerType.PersonCollision);
+                int rand = PRNG.GetNumber(0, 100);
+                if (rand < 15 && identifier.person.GetType() == typeof(Walker) && person.GetType() == typeof(Walker))
+                {
+                    Talker t1 = new Talker(person);
+                    Talker t2 = new Talker(identifier.person);
+                    t1.TalksTo = t2;
+                    t2.TalksTo = t1;
+                    PersonManager.INSTANCE.UpdatePerson(person, t1);
+                    PersonManager.INSTANCE.UpdatePerson(identifier.person, t2);
+                    SetEditorValues();
+                    identifier.SetEditorValues();
+                    t1.Trigger(TriggerType.PersonStartTalking);
+                }
+            }
+            else
+                person.Trigger(TriggerType.Collision);
+        }
+
+        public void OnMouseOver()
+        {
+            if (PersonManager.INSTANCE.DemoMode)
+            {
+                if (demoTime >= 0.5f)
+                {
+                    person.Trigger(TriggerType.Click);
+                    demoTime = 0f;
+                }
+            }
+        }
+
+        public void Update()
+        {
+            demoTime += Time.deltaTime;
         }
 
         #endregion

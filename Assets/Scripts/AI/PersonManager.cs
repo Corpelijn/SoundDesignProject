@@ -1,4 +1,6 @@
-﻿using Assets.Scripts.LevelGenerator.GridObjects;
+﻿using Assets.Scripts.AI.People;
+using Assets.Scripts.AI.People.Demo;
+using Assets.Scripts.LevelGenerator.GridObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +16,9 @@ namespace Assets.Scripts.AI
         public int TotalPeople = 30;
         public float TimePerSquare = 0.5f;
         public Transform PeopleTransform;
-        
+        public bool DemoMode = false;
 
+        private float nextXPosition;
         private List<Person> people;
         private List<GridSpawnPoint> spawnPoints;
 
@@ -51,6 +54,8 @@ namespace Assets.Scripts.AI
 
         private void SpawnPerson(Person person)
         {
+            if (DemoMode)
+                DemoSpawnPerson(person);
             if (spawnPoints.Count == 0)
                 return;
 
@@ -64,9 +69,20 @@ namespace Assets.Scripts.AI
             spawnPoints.Add(spawnPoint);
         }
 
+        private void DemoSpawnPerson(Person person)
+        {
+            person.SetStartPosition(new Vector3(nextXPosition, 0, 0));
+            nextXPosition += 2f;
+        }
+
         private void GenerateNewPerson()
         {
-            Person p = Person.GenerateNew();
+            Person p;
+            if (DemoMode)
+                p = new DemoPerson();
+            else
+                p = Person.GenerateNew();
+
             if (p != null)
                 people.Add(p);
         }
@@ -88,6 +104,18 @@ namespace Assets.Scripts.AI
         {
             spawnPoints.Add(spawnpoint);
             Shuffle(spawnPoints);
+        }
+
+        public void UpdatePerson(Person original, Person newPerson)
+        {
+            int index = people.FindIndex(x => x == original);
+            if (index != -1)
+            {
+                people[index] = newPerson;
+                PersonIdentifier pi = people[index].GameObject.GetComponent<PersonIdentifier>();
+                pi.Person = newPerson;
+                pi.SetEditorValues();
+            }
         }
 
         #endregion
@@ -113,7 +141,7 @@ namespace Assets.Scripts.AI
 
         public void Update()
         {
-            if(TotalPeople > people.Count)
+            if (TotalPeople > people.Count)
             {
                 GenerateNewPerson();
             }

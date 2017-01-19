@@ -54,7 +54,7 @@ namespace Assets.Scripts.Audio
 
             // Pitch the samples acording to the given pitch
             Profiler.BeginSample("Bake single AudioClip");
-            PitchShifter.PitchShift(PRNG.GetFloatNumber(0.9f, 1.2f, 1), samples.Length, 32, 32, ajusted.frequency, samples);
+            PitchShifter.PitchShift(pitch, samples.Length, 32, 32, ajusted.frequency, samples);
             Profiler.EndSample();
             
             // Normalize the audio

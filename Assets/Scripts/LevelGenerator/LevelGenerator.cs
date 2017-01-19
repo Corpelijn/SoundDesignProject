@@ -55,6 +55,7 @@ namespace Assets.Scripts.LevelGenerator
         {
             GenerateSquare();
             GenerateRoads();
+            //GenerateMarketStands();
         }
 
         private void GenerateSquare()
@@ -114,11 +115,14 @@ namespace Assets.Scripts.LevelGenerator
 
         private void GenerateMarketStands()
         {
-            int amount = PRNG.GetNumber(5, 10);
+            int amount = PRNG.GetNumber(10, 20);
 
             for (int i = 0; i < amount; i++)
             {
+                int x = PRNG.GetNumber(3, squareWidth - 3);
+                int y = PRNG.GetNumber(3, squareHeight - 3);
 
+                grid.AddGridObject(new GridMarktetStand(x, y));
             }
         }
 
